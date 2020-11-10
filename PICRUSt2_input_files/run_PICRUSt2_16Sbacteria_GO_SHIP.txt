@@ -1,0 +1,39 @@
+
+#############################make a .fasta file from your sequences
+awk '{ printf ">%s\n%s\n",$1,$2 }' Sequences_97percent_no_chloroplast_no_mitochondria_input_for_PICRUSt_v.2.30.txt > Sequences_97percent_no_chloroplast_no_mitochondria_input_for_PICRUSt_v.2.30.fasta 
+
+
+############################# The below code was used to run the PICRUSt2 analyses as a batch job on the high performance computing cluster
+
+#!/bin/bash -l
+#SBATCH --job-name=Picrust2_GO_SHIP
+#SBATCH --nodes=1
+#SBATCH --ntasks=20
+#SBATCH --mem=50gb
+#SBATCH --time=24:00:00
+
+##SBATCH --mail-type=ALL
+##SBATCH --mail-user=eric.raes@csiro.au
+
+#input
+module load picrust/2.1.4b
+module load hmmer/3.1b2
+module load epa-ng/0.3.5
+module load gappa/20180727
+
+picrust2_pipeline.py -s Sequences_97percent_no_chloroplast_no_mitochondria_input_for_PICRUSt_v.2.30.fasta -i OTU_Table_97percent_no_chloroplast_no_mitochondria_input_for_PICRUSt_v.2.30.txt -o picrust2_out_pipeline -p 1
+
+
+#############################
+The key output files are:
+
+1) EC_metagenome_out - Folder containing unstratified EC number metagenome predictions (pred_metagenome_unstrat.tsv.gz), sequence table normalized by predicted 16S copy number abundances (seqtab_norm.tsv.gz), and the per-sample NSTI values weighted by the abundance of each ASV (weighted_nsti.tsv.gz).
+2) KO_metagenome_out - As EC_metagenome_out above, but for KO metagenomes.
+3) pathways_out - Folder containing predicted pathway abundances and coverages per-sample, based on predicted EC number abundances.
+
+
+
+
+
+
+
