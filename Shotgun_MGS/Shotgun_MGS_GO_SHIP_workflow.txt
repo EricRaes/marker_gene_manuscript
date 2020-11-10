@@ -1,0 +1,115 @@
+Shotgun workflow for one sample.
+
+## gunzip fastq file
+gunzip *_001.fastq.gz
+
+
+##concat files from different lanes.
+cat `find . -maxdepth 1 | egrep '34369.*R1'` > 34369_ALL_R1.fastq &
+cat `find . -maxdepth 1 | egrep '34369.*R2'` > 34369_ALL_R2.fastq &
+##wait a minute, the files gets bigger but takes some time
+
+
+
+1. FastQC
+module load fastqc/0.11.8
+fastqc 34369_ALL_R1.fastq 34369_ALL_R1.fastq -t 10
+
+
+
+2. module load trimmomatic/0.38
+
+#Sample 1#get rid of adapters paired end
+trimmomatic PE 34369_ALL_R1.fastq 34369_ALL_R2.fastq \
+34369_R1_ALL_paired_QC_ADAPTERS.fastq 34369_R1_ALL_unpaired_QC_ADAPTERS.fastq \
+34369_R2_ALL_paired_QC_ADAPTERS.fastq 34369_R2_ALL_unpaired_QC_ADAPTERS.fastq \
+ILLUMINACLIP:/scratch1/rae02e/IN2016_v03_Shotgun/MetaGs/trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:keepBothReads \
+
+
+
+3. module load bbtools/38.37
+ 
+Now merge: BBtools -> bbmerge
+#reduce data and information
+
+bbmerge.sh in1=/scratch1/rae02e/IN2016_v03_Shotgun/MetaGs/34369/34369_R1_ALL_paired_QC_ADAPTERS.fastq in2=/scratch1/rae02e/IN2016_v03_Shotgun/MetaGs/34369/34369_R2_ALL_paired_QC_ADAPTERS.fastq out=merged_34369.fq outu=unmerged_34369.fq ihist=ihist_34369.txt
+
+
+
+4. module load trimmomatic/0.38
+
+1#do QC on merged reads
+trimmomatic SE merged_34369.fq merged_QC_34369.fq \
+LEADING:3 TRAILING:3 SLIDINGWINDOW:10:15 MINLEN:50 -threads 10 \
+
+1#do QC on unmerged reads
+trimmomatic SE unmerged_34369.fq unmerged_QC_34369.fq \
+LEADING:3 TRAILING:3 SLIDINGWINDOW:10:15 MINLEN:50 -threads 10 \
+
+
+5. Concatenate cat file1.fasta file2.fasta > combined.fasta
+
+cat merged_34369.fq unmerged_QC_34369.fq > 34369_SQ_cat.fq
+
+
+
+6. module load fastqc/0.11.8
+
+fastqc 34369_SQ_cat.fq -t 10
+
+
+
+7. put them all nicely in one folder: 
+#rsync -zvh *_SQ_cat.fq /scratch1/.../.../.../SqueezeMeta/
+
+rsync -zvh 34369_SQ_cat.fq /scratch1/.../.../.../SqueezeMeta/
+
+
+
+8. ---------> Install&test SqueezeMeta see https://github.com/jtamames/SqueezeMeta 
+#Install&test
+
+module load miniconda3/4.3.24
+conda create -n SqueezeMeta -c bioconda -c fpusan squeezemeta
+source activate SqueezeMeta
+source deactivate
+test_install.pl
+
+#or 
+wget http://silvani.cnb.csic.es/SqueezeMeta/SqueezeMetaDB.tar.gz
+wget -O - https://github.com/T-PWK/flake-idgen/tarball/master | tar xz
+test_install.pl
+
+
+# run the sqm script in batch mode 
+1#!/bin/bash -l
+#SBATCH --job-name=SqMeta_34369
+#SBATCH --nodes=1
+#SBATCH --ntasks=12
+#SBATCH --mem=75gb
+#SBATCH --time=100:00:00
+##SBATCH --mail-type=ALL
+##SBATCH --mail-user=eric.raes@csiro.au
+source activate SqueezeMeta
+~/.conda/envs/SqueezeMeta/SqueezeMeta/utils/sqm_reads.pl -p 34369_Squeeze -s /../.../Sample_List_34369.samples -f /../.../../SquuezeMeta/ -t ${SLURM_NTASKS}
+
+
+
+# then combine the outputs for all samples with combine-sqm-tables.py
+
+
+
+# import 'combined SQM object into R
+library(SQMtools)
+
+ALL_Stations = loadSQMlite('./output_sqm_reads_GO_SHIP',tax_mode = "prokfilter")
+
+
+# get the KO data see https://github.com/jtamames/SqueezeMeta/blob/master/SQMtools_0.6.0.pdf and https://github.com/jtamames/SqueezeMeta/issues/122 
+
+
+# export the KO data to a .csv file
+
+
+# This file is used for the comparative analysis between the KEGG Orthologs (KO) predictions from PICRUSt2 and the KOs profiled from corresponding shotgun metagenomes (MGS) in a similar way as presented by Douglas et al. (2020a). 
+
