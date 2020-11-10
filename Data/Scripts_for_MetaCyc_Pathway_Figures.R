@@ -14,6 +14,15 @@ library(plyr)
 library(dplyr)
 library(microbiome)
 
+######
+#The scripts below cover the plots and data anlayses from the manuscript
+##1# alpha and beta diversity plots
+##2# Latitudinal metabolic MetaCyc pathay trends + Wilcoxon Statistics and averages 
+##3# Indicator analyses - library(indicspecies)
+##4# Boosted Regression Trees Analyses - library(dismo) - library(gbm)
+
+######
+
 
 #####load PICRUSt2 output into a Phyloseq object
 #1. Pathway abundance file
