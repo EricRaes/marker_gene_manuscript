@@ -14,3 +14,4 @@ Repository outline:
 - The 'Shotgun_MGS' directory details the shotgun MGS workflow and the links to the SqueezeMeta pipeline https://github.com/jtamames/SqueezeMeta
 - The 'PICRUSt2_input_files' directory includes the necessary files and script for the PICRUSt2 analyses 
     * Please note that detailed information for the PICRUSt2 analyses can be found here https://github.com/picrust/picrust2.
+- The 'Supplementary Methods Clustering at 97 percent threshold' folder provides information how the ASV sequences were clusterd at the 97% similarity threshold
