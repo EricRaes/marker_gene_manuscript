@@ -1,0 +1,2 @@
+The ASV abundance matrix was converted into a fasta file with size annotations from the sequences in Python (script in this folder and see the markdown workflow). 
+USEARCH was then used to cluster the ASV sequences at the 97 % identity threshold using the ‘cluster_fast’ function with -id 0.97. 
